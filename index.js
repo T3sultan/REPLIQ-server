@@ -22,116 +22,30 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     await client.connect();
+    const perliq = client.db("perliq");
+    const parlourCollection = perliq.collection("products");
 
     //service create api
-    app.post("/parlour", async (req, res) => {
+    app.post("/product", async (req, res) => {
       const newParlour = req.body;
       const result = await parlourCollection.insertOne(newParlour);
       res.send(result);
     });
-    app.get("/parlour", async (req, res) => {
+    app.get("/product", async (req, res) => {
       const query = {};
       const cursor = parlourCollection.find(query);
       const parlour = await cursor.toArray();
       res.send(parlour);
     });
     //manage service
-    app.get("/parlourManage", verifyJWT, verifyAdmin, async (req, res) => {
-      const manage = await parlourCollection.find().toArray();
-      res.send(manage);
-    });
+
     //delete api
-    app.delete(
-      "/parlourManage/:email",
-      verifyJWT,
-      verifyAdmin,
-      async (req, res) => {
-        const email = req.params.email;
-        const filter = { email: email };
-        const result = await parlourCollection.deleteOne(filter);
-        res.send(result);
-      }
-    );
-
-    app.get("/booking/:id", verifyJWT, async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: ObjectId(id) };
-      const booking = await bookingCollection.findOne(query);
-      res.send(booking);
-    });
-    app.get("/booking", verifyJWT, async (req, res) => {
-      const patient = req.query.patient;
-      const decodedEmail = req.decoded.email;
-      if (patient === decodedEmail) {
-        const query = { patient: patient };
-        const bookings = await bookingCollection.find(query).toArray();
-        return res.send(bookings);
-      } else {
-        return res.status(403).send({ message: "forbidden access" });
-      }
-    });
-    app.post("/booking", async (req, res) => {
-      const booking = req.body;
-      const query = {
-        treatment: booking.treatment,
-        date: booking.date,
-        patient: booking.patient,
-      };
-      const exists = await bookingCollection.findOne(query);
-      if (exists) {
-        return res.send({ success: false, booking: exists });
-      }
-      const result = await bookingCollection.insertOne(booking);
-
-      return res.send({ success: true, result });
-    });
 
     //user all
-    app.get("/user", verifyJWT, async (req, res) => {
-      const users = await userCollection.find().toArray();
-      res.send(users);
-    });
+
     //user token
-    app.put("/user/:email", async (req, res) => {
-      const email = req.params.email;
-      const user = req.body;
-      const filter = { email: email };
-      const options = { upsert: true };
-      const updateDoc = {
-        $set: user,
-      };
-      const result = await userCollection.updateOne(filter, updateDoc, options);
-      const token = jwt.sign(
-        { email: email },
-        process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: "1h" }
-      );
-      res.send({ result, token });
-    });
+
     /// private make admin
-    app.get("/admin/:email", async (req, res) => {
-      const email = req.params.email;
-      const user = await userCollection.findOne({ email: email });
-      const isAdmin = user.role === "admin";
-      res.send({ admin: isAdmin });
-    });
-    app.put("/user/admin/:email", verifyJWT, async (req, res) => {
-      const email = req.params.email;
-      const filter = { email: email };
-      const updateDoc = {
-        $set: { role: "admin" },
-      };
-      const result = await userCollection.updateOne(filter, updateDoc);
-      res.send(result);
-    });
-    app.post("/addReview", async (req, res) => {
-      const result = await reviewCollection.insertOne(req.body);
-      res.send(result);
-    });
-    app.get("/reviewItem", async (req, res) => {
-      const result = reviewCollection.find({}).toArray();
-      res.send(result);
-    });
   } finally {
     // await client.close()
   }

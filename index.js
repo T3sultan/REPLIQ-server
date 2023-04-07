@@ -83,7 +83,6 @@ async function run() {
       const result = await orderCollection.insertOne(order);
       res.send(result);
     });
-    //manage service
 
     //delete api
 
@@ -125,6 +124,18 @@ async function run() {
         $set: { role: "admin" },
       };
       const result = await userCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+    //all product list
+    app.get("/manage", verifyJWT, async (req, res) => {
+      const manage = await perliqCollection.find().toArray();
+      res.send(manage);
+    });
+    //delete api
+    app.delete("/manage/:email", verifyJWT, async (req, res) => {
+      const email = req.params.email;
+      const filter = { email: email };
+      const result = await perliqCollection.deleteOne(filter);
       res.send(result);
     });
   } finally {

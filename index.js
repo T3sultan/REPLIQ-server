@@ -7,11 +7,8 @@ const app = express();
 
 const { MongoClient, ServerApiVersion } = require("mongodb");
 const ObjectId = require("mongodb").ObjectId;
-// const id = new ObjectId();
 
 const jwt = require("jsonwebtoken");
-
-// ACCESS_TOKEN_SECRET=4e90ca4f3664a3bf8616e78c45eb2c55730058cac3e71a5331484dd1c4000d77a786dbf8b0ef80426aaf02910da366b370dabd3eb6f50ec97a388273d9cebd7d
 
 app.use(cors());
 app.use(express.json());
@@ -91,7 +88,7 @@ async function run() {
     //delete api
 
     //user all
-    app.get("/user", async (req, res) => {
+    app.get("/user", verifyJWT, async (req, res) => {
       const users = await userCollection.find().toArray();
       res.send(users);
     });

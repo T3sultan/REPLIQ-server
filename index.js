@@ -83,6 +83,12 @@ async function run() {
       const result = await orderCollection.insertOne(order);
       res.send(result);
     });
+    app.get("/order", async (req, res) => {
+      const query = {};
+      const cursor = orderCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
 
     //delete api
 
